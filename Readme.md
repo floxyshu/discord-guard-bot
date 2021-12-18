@@ -1,7 +1,7 @@
 # Discord Guard Bot
 
 
-      - NOT: Altyapı BANA AİT Değildir SnowOuts, Yulaf'ındır ben editleyerek size paylaştım buyrun kullanın.
+      - NOT: Altyapı TAMAMEN BANA AİT Değildir SnowOuts Yulaf ve Ben kodladık size paylaştım buyrun kullanın.
       - [Kurulum](# Kurulum)
       - [FAQ](# FAQ)
 
