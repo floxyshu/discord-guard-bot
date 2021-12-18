@@ -2,9 +2,8 @@
 
 
       - NOT: Altyapı BANA AİT Değildir SnowOuts, Yulaf'ındır ben editleyerek size paylaştım buyrun kullanın.
-      - [Kurulum](#kurulum)
-      - [İçerikler](#İçerikler)
-      - [FAQ](#faq)
+      - [Kurulum](#Kurulum)
+      - [FAQ](#FAQ)
 
 # Kurulum
 * İlk olarak bilgisayarına [Node JS](https://nodejs.org/en/) indir.
