@@ -1,27 +1,23 @@
-﻿const { Discord, Client, MessageEmbed, Webhook } = require('discord.js');
+const { Discord, Client, MessageEmbed } = require('discord.js');
 const client = global.client = new Client({fetchAllMembers: true});
 const fs = require('fs');
 
+
 let Options = {
-  "KanalK": "channel-log", //kanal log ismi id girmeyin aptal botçu olmayın ismi yazin birakin
-  "webhookkoruma": "", //webhook log ismi id girmeyin vala
+  "sunuculog": "guild-log", //yedek log 
   "token": "", //bot token
-  "seskanalismi": "", //ses kanal ismi
-  "whitelist": [""]
+  "seskanalismi": "floxy", //ses kanal ismi
+  "whitelist": ["","",]
 }
 
 let kurucu = {
   "botOwner": "", //owner id
   "guildID": "", //sunucu id
-  "botPrefix": "" //prefix
+  "botPrefix": "f?" //prefix
 }
 
-process.on('uncaughtException', function(err) { 
-  console.log(err) 
-});
-
 client.on("ready", async () => {
-  client.user.setPresence({activity: {name: 'Mavera ❤️ Floxy'}, status: 'invisible'}); //Bot durum, oynuyor //idle: boşta, online: çevrimiçi, dnd: rahatsız etmeyin, invisible: görünmez \\ 
+  client.user.setPresence({activity: {name: ' ❤️ Floxy'}, status: 'idle'});
   let botVoiceChannel = client.channels.cache.find(channel => channel.name === Options.seskanalismi);
   if (botVoiceChannel) botVoiceChannel.join().catch(err => console.error("Bot ses kanalına bağlanamadı!"));
 });
@@ -53,7 +49,7 @@ client.on("message", async message => {
 function cezalandir(kisiID, tur) {
   let uye = client.guilds.cache.get(kurucu.guildID).members.cache.get(kisiID);
   if (!uye) return;
-  if (tur == "ban") return uye.ban({days: 7, reason: "Floxy Channel Guard" }).catch();
+  if (tur == "ban") return uye.ban({ reason: "Floxy Guild Guard" }).catch();
 };
 // Güvenli kişi fonksiyonu
 function guvenli(kisiID) {
@@ -63,90 +59,77 @@ function guvenli(kisiID) {
   else return false;
 };
 
-client.on("webhookUpdate", async channel => {
-  let entry = await channel.guild.fetchAuditLogs({type: 'WEBHOOK_CREATE'}).then(audit => audit.entries.first());
-  if (!entry || !entry.executor || guvenli(entry.executor.id)) return;
-  cezalandir(entry.executor.id, "ban");
-  let webhookgoruma = client.channels.cache.find(channel => channel.name === Options.webhookkoruma);
-  if (webhookgoruma) {webhookgoruma.send(
-    new MessageEmbed()
-    .setColor("2f3136")
-    .setAuthor('Bir Webhook Oluşturuldu!')
-    .setDescription(`📗 Oluşturan kullanıcı: ${entry.executor} - (\`${entry.executor.id}\`) oluşturan kişiyi yasakladım!`)
-    .setFooter(`Mavera ❤️ Floxy`)
-    .setTimestamp()
- );
- 
+
+
+
+let urlguard = {
+  "Vanity_URL": "", //urlni gir
+}
+
+client.on('guildUpdate', async (oldGuild, newGuild) => {
+if (oldGuild.vanityURLCode != newGuild.vanityURLCode) {
+let entry = await newGuild.fetchAuditLogs({type: 'GUILD_UPDATE'}).then(audit => audit.entries.first());
+if (!entry.executor || entry.executor.id === client.user.id) return;
+let channel = client.channels.cache.find(channel => channel.name === Options.sunuculog)
+if (channel) channel.send(`📕 ${entry.executor} adlı kişi url'yi çalmaya çalıştığı için banlandı ve url eski haline getirildi.`)
+if (!channel) newGuild.owner.send(`📕 ${entry.executor} adlı kişi url'yi çalmaya çalıştığı için banlandı ve url eski haline getirildi.`)
+cezalandir(entry.executor.id, "ban");
+ytKapat("798999362176155718"); //ytleri kapatacagi rol idsini girin
+const settings = {
+url: `https://discord.com/api/v6/guilds/${newGuild.id}/vanity-url`,
+body: {
+  code: urlguard.Vanity_URL
+},
+json: true,
+method: 'PATCH',
+headers: {
+  "Authorization": `Bot ${Options.token}`
+}
+};
+
+request(settings, (err, res, body) => {
+if (err) {
+  return console.log(err);
 }
 });
+}});
 
-
-client.on("channelUpdate", async (oldChannel, newChannel) => {
-  let entry = await newChannel.guild.fetchAuditLogs({type: 'CHANNEL_UPDATE'}).then(audit => audit.entries.first());
-  if (!entry || !entry.executor || !newChannel.guild.channels.cache.has(newChannel.id) || guvenli(entry.executor.id)) return;
+client.on("guildMemberAdd", async member => {
+  let entry = await member.guild.fetchAuditLogs({type: 'BOT_ADD'}).then(audit => audit.entries.first());
+  if (!member.user.bot || !entry || !entry.executor || guvenli(entry.executor.id)) return;
   cezalandir(entry.executor.id, "ban");
-  if (newChannel.type !== "category" && newChannel.parentID !== oldChannel.parentID) newChannel.setParent(oldChannel.parentID);
-  if (newChannel.type === "category") {
-    newChannel.edit({
-      name: oldChannel.name,
-    });
-  } else if (newChannel.type === "text") {
-    newChannel.edit({
-      name: oldChannel.name,
-      topic: oldChannel.topic,
-      nsfw: oldChannel.nsfw,
-      rateLimitPerUser: oldChannel.rateLimitPerUser
-    });
-  } else if (newChannel.type === "voice") {
-    newChannel.edit({
-      name: oldChannel.name,
-      bitrate: oldChannel.bitrate,
-      userLimit: oldChannel.userLimit,
-    });
-  };
-  oldChannel.permissionOverwrites.forEach(perm => {
-    let thisPermOverwrites = {};
-    perm.allow.toArray().forEach(p => {
-      thisPermOverwrites[p] = true;
-    });
-    perm.deny.toArray().forEach(p => {
-      thisPermOverwrites[p] = false;
-    });
-    newChannel.createOverwrite(perm.id, thisPermOverwrites);
-  });
-  let kanallaraelleme = client.channels.cache.find(channel => channel.name === Options.KanalK);
-  if (kanallaraelleme) { kanallaraelleme.send(
+  cezalandir(member.id, "ban");
+  let logKanali = client.channels.cache.find(channel => channel.name === Options.sunuculog)
+  if (logKanali) { logKanali.send(
     new MessageEmbed()
     .setColor("2f3136")
-    .setAuthor('Bir Kanal/Kategori Güncellendi!')
-    .setDescription(`📒 ${entry.executor} - (\`${entry.executor.id}\`) tarafından **${oldChannel.name}** kanalı güncellendi!`)
-    .setFooter(`Mavera ❤️ Floxy`)
+    .setAuthor('Sunucuya Bot Eklendi!')
+    .setDescription(`📒 ${entry.executor} - (\`${entry.executor.id}\`) tarafından **${member}** - (\`${member.id}\`) botu sunucuya eklendi!`)
+    .setFooter(` ❤️ Floxy`)
     .setTimestamp()
-  );
-};
-  
+    );
+    ytKapat("798999362176155718"); //ytleri kapatacagi rol idsini girin
+   }
 });
 
-client.on("channelDelete", async channel => {
-  let entry = await channel.guild.fetchAuditLogs({type: 'CHANNEL_DELETE'}).then(audit => audit.entries.first());
+
+client.on("guildUpdate", async (oldGuild, newGuild) => {
+  let entry = await newGuild.fetchAuditLogs({type: 'GUILD_UPDATE'}).then(audit => audit.entries.first());
   if (!entry || !entry.executor || guvenli(entry.executor.id)) return;
   cezalandir(entry.executor.id, "ban");
-  await channel.clone({ reason: " Kanal Guard" }).then(async kanal => {
-    if (channel.parentID != null) await kanal.setParent(channel.parentID);
-    await kanal.setPosition(channel.position);
-    if (channel.type == "category") await channel.guild.channels.cache.filter(k => k.parentID == channel.id).forEach(x => x.setParent(kanal.id));
-  });
-  let kanallaraelleme = client.channels.cache.find(channel => channel.name === Options.KanalK);
-  if (kanallaraelleme) { kanallaraelleme.send(
-    new MessageEmbed()
+  if (newGuild.name !== oldGuild.name) newGuild.setName(oldGuild.name);
+  if (newGuild.region !== oldGuild.region) newGuild.setRegion(oldGuild.region);
+  if (newGuild.iconURL({dynamic: true, size: 2048}) !== oldGuild.iconURL({dynamic: true, size: 2048})) newGuild.setIcon(oldGuild.iconURL({dynamic: true, size: 2048}));
+  let sunucuyusal = client.channels.cache.find(channel => channel.name === Options.sunuculog)
+  if (sunucuyusal) { sunucuyusal.send(new MessageEmbed()
     .setColor("2f3136")
-    .setAuthor('Bir Kanal Silindi!')
-    .setDescription(`📕 ${entry.executor} - (\`${entry.executor.id}\`) tarafından **${channel.name}** kanalı silindi!`)
-    .setFooter(`Mavera ❤️ Floxy`)
+    .setAuthor('Sunucu Güncellendi!')
+    .setDescription(`📕 ${entry.executor} - (\`${entry.executor.id}\`) tarafından sunucu güncellendi!`)
+    .setFooter(` ❤️ Floxy`)
     .setTimestamp()
-  ); 
-  
-};
+    );
+    ytKapat("798999362176155718"); //ytleri kapatacagi rol idsini girin
+  };
 });
 
 
