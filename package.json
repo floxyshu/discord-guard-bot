@@ -1,0 +1,15 @@
+{
+  "name": "yulaf-sguard",
+  "version": "0.0.1",
+  "description": "yulaf Sunucu Guard",
+  "main": "yulaf.js",
+  "scripts": {
+    "test": "node yulaf.js"
+  },
+  "author": "yulaf",
+  "license": "ISC",
+  "dependencies": {
+    "discord.js": "^12.2.0"
+  },
+  "keywords": []
+}
