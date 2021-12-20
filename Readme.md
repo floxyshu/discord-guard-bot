@@ -23,7 +23,7 @@
 Sıkça sorulan sorulara buradan ulaşabilirsin.
 
 **Q:** Altyapı tamamen sanamı ait?<br />
-**A:** Hayır, SnowOuts ve Yulaf'a aittir.
+**A:** Biraz, SnowOuts,Yulaf ve Bana'a aittir.
 
 **Q:** Hatalarla ilgileniyor musun?<br />
 **A:** Proje içindeki hatalarla ilgileniyorum eğer bir hata ile karşılaşırsanız lütfen Discorddan benimle iletişim kurun. 
